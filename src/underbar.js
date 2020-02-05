@@ -223,6 +223,12 @@
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if (iterator === undefined) {
+      var iterator = _.identity;
+    }
+    return !_.every(collection, function (value) {
+      return !iterator(value);
+    })
   };
 
 
@@ -245,11 +251,38 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var numArgs = arguments.length;
+    if (numArgs === 1) {
+      return obj;
+    } else {
+      for (var i = 1; i < numArgs; i++) {
+        var thisObj = arguments[i];
+        for (var key in thisObj) {
+          obj[key] = thisObj[key];
+        }
+      }
+      return obj;
+    }
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var numArgs = arguments.length;
+    if (numArgs === 1) {
+      return obj;
+    } else {
+      for (var i = 1; i < numArgs; i++) {
+        var thisObj = arguments[i];
+        for (var key in thisObj) {
+          if (obj.hasOwnProperty(key)) {
+            continue;
+          }
+          obj[key] = thisObj[key];
+        }
+      }
+      return obj;
+    }
   };
 
 
@@ -293,6 +326,21 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var pastRuns = {};
+
+    var innerFunc = function() {
+      var args = JSON.stringify(arguments);
+      debugger;
+      if (pastRuns.hasOwnProperty(args)) {
+        return pastRuns[args];
+      } else {
+        debugger;
+        var output = func(...Array.from(arguments));
+        pastRuns[args] = output;
+        return output;
+      }
+    };
+    return innerFunc;
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -302,6 +350,11 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+
+    var argumentsFromDelay = Array.from(arguments).slice(2);
+    setTimeout(function(){
+      func(...argumentsFromDelay);
+    }, wait)
   };
 
 
